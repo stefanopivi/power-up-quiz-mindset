@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Power Up – Quiz sul mindset di crescita</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;700;800&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F2F4FB;
+    --surface: #FFFFFF;
+    --ink: #161A3C;
+    --ink-soft: #4B5078;
+    --line: #D6DAEE;
+    --brand: #5B3DF5;
+    --brand-dark: #4429D1;
+    --ok: #0F8A4B;
+    --ok-bg: #E4F6EC;
+    --ko: #CC3340;
+    --ko-bg: #FCE9EB;
+    --spark: #FFC933;
+    --radius: 14px;
+    --display: "Sora", "Trebuchet MS", "Segoe UI", sans-serif;
+    --text: "Source Sans 3", "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--text);
+    font-size: 18px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 660px; margin: 0 auto; padding: 20px 18px 56px; }
+
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--display); font-weight: 800; font-size: 22px; letter-spacing: -0.01em;
+    margin-bottom: 22px;
+  }
+  .brand svg { width: 30px; height: 30px; flex: none; }
+  .brand small { font-family: var(--text); font-weight: 600; font-size: 15px; color: var(--ink-soft); margin-left: auto; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 28px 24px;
+  }
+  h1, h2 { font-family: var(--display); line-height: 1.2; letter-spacing: -0.02em; margin: 0 0 14px; }
+  h1 { font-size: 34px; font-weight: 800; }
+  h2 { font-size: 24px; font-weight: 700; }
+  p { margin: 0 0 14px; }
+  .muted { color: var(--ink-soft); }
+
+  .btn {
+    font-family: var(--display); font-weight: 700; font-size: 17px;
+    background: var(--brand); color: #fff;
+    border: 0; border-radius: 12px;
+    padding: 14px 26px; cursor: pointer;
+    box-shadow: 0 4px 0 var(--brand-dark);
+    transition: transform .08s ease, box-shadow .08s ease;
+  }
+  .btn:hover { background: #6A4EFF; }
+  .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--brand-dark); }
+  .btn.ghost { background: transparent; color: var(--brand); box-shadow: inset 0 0 0 2px var(--brand); }
+  .btn.ghost:active { transform: none; }
+  :focus-visible { outline: 3px solid var(--spark); outline-offset: 3px; }
+
+  /* barra di avanzamento: un segmento per domanda, colorato dopo la risposta */
+  .steps { display: flex; gap: 5px; margin-bottom: 8px; }
+  .steps span { flex: 1; height: 8px; border-radius: 4px; background: var(--line); transition: background .25s; }
+  .steps span.now { background: var(--brand); }
+  .steps span.ok { background: var(--ok); }
+  .steps span.ko { background: var(--ko); }
+  .counter { font-size: 15px; color: var(--ink-soft); margin: 0 0 18px; display: flex; justify-content: space-between; }
+
+  .q-title { font-family: var(--display); font-size: 15px; font-weight: 700; color: var(--brand); margin: 0 0 6px; }
+  .scenario { font-family: var(--display); font-size: 21px; font-weight: 700; line-height: 1.3; letter-spacing: -0.01em; margin: 0 0 20px; }
+
+  .options { display: grid; gap: 12px; }
+  .opt {
+    display: flex; gap: 14px; align-items: flex-start; text-align: left;
+    width: 100%;
+    font: inherit; color: inherit;
+    background: var(--surface);
+    border: 2px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: border-color .12s, background .12s;
+  }
+  .opt:hover:not(:disabled) { border-color: var(--brand); background: #F7F5FF; }
+  .opt .letter {
+    flex: none; width: 30px; height: 30px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--bg); font-family: var(--display); font-weight: 700; font-size: 15px;
+  }
+  .opt:disabled { cursor: default; }
+  .opt.correct { border-color: var(--ok); background: var(--ok-bg); }
+  .opt.correct .letter { background: var(--ok); color: #fff; }
+  .opt.wrong { border-color: var(--ko); background: var(--ko-bg); }
+  .opt.wrong .letter { background: var(--ko); color: #fff; }
+  .opt.dim { opacity: .55; }
+
+  .feedback { margin-top: 20px; border-radius: var(--radius); padding: 16px 18px; }
+  .feedback.ok { background: var(--ok-bg); border-left: 6px solid var(--ok); }
+  .feedback.ko { background: var(--ko-bg); border-left: 6px solid var(--ko); }
+  .feedback strong { font-family: var(--display); font-size: 18px; display: block; margin-bottom: 4px; }
+  .feedback.ok strong { color: var(--ok); }
+  .feedback.ko strong { color: var(--ko); }
+  .feedback p { margin: 0; }
+  .next { margin-top: 20px; text-align: right; }
+
+  /* risultato */
+  .score-box { text-align: center; padding: 8px 0 22px; border-bottom: 1px solid var(--line); margin-bottom: 24px; }
+  .score-num { font-family: var(--display); font-weight: 800; font-size: 78px; line-height: 1; letter-spacing: -0.04em; }
+  .score-num span { font-size: 34px; color: var(--ink-soft); font-weight: 700; letter-spacing: 0; }
+  .score-msg { font-size: 19px; max-width: 460px; margin: 14px auto 0; }
+
+  .recap { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+  .recap li { border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; }
+  .recap li.ok { border-left: 6px solid var(--ok); }
+  .recap li.ko { border-left: 6px solid var(--ko); }
+  .recap .rq { font-family: var(--display); font-weight: 700; font-size: 16px; margin: 0 0 8px; }
+  .recap .line { font-size: 16.5px; margin: 0 0 4px; }
+  .recap .tag { font-weight: 600; }
+  .recap .tag.ok { color: var(--ok); }
+  .recap .tag.ko { color: var(--ko); }
+  .recap .why { font-size: 15.5px; color: var(--ink-soft); margin: 8px 0 0; }
+  .end-actions { margin-top: 26px; text-align: center; }
+
+  .hidden { display: none !important; }
+  @media (max-width: 480px) {
+    h1 { font-size: 28px; }
+    .card { padding: 22px 16px; }
+    .scenario { font-size: 19px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="brand">
+    <svg viewBox="0 0 32 32" aria-hidden="true">
+      <rect width="32" height="32" rx="8" fill="#5B3DF5"/>
+      <path d="M18.5 4 8 18h7l-2 10 11-15h-7z" fill="#FFC933"/>
+    </svg>
+    Power Up
+    <small>Quiz sul mindset</small>
+  </div>
+
+  <!-- Schermata iniziale -->
+  <section id="start" class="card">
+    <h1>Come reagisci quando le cose si fanno difficili?</h1>
+    <p>10 situazioni di lavoro, 3 reazioni possibili per ciascuna. Scegli quella che somiglia di più a come reagiresti davvero, oppure quella che ritieni più utile per crescere.</p>
+    <p class="muted">Dopo ogni risposta vedi subito se è in linea con il mindset di crescita. Alla fine trovi il punteggio e tutte le soluzioni.</p>
+    <p style="margin-top:24px"><button class="btn" id="btn-start" type="button">Inizia il quiz</button></p>
+  </section>
+
+  <!-- Domanda -->
+  <section id="quiz" class="card hidden" aria-live="polite">
+    <div class="steps" id="steps" aria-hidden="true"></div>
+    <p class="counter"><span id="counter"></span><span id="live-score"></span></p>
+    <p class="q-title" id="q-title"></p>
+    <h2 class="scenario" id="q-scenario" tabindex="-1"></h2>
+    <div class="options" id="options"></div>
+    <div id="feedback" class="feedback hidden" role="status"></div>
+    <div class="next hidden" id="next-wrap">
+      <button class="btn" id="btn-next" type="button">Avanti</button>
+    </div>
+  </section>
+
+  <!-- Risultato -->
+  <section id="result" class="card hidden">
+    <div class="score-box">
+      <div class="score-num" id="score-num"></div>
+      <p class="score-msg" id="score-msg"></p>
+    </div>
+    <h2>Le soluzioni</h2>
+    <ol class="recap" id="recap"></ol>
+    <div class="end-actions">
+      <button class="btn ghost" id="btn-restart" type="button">Rifai il quiz</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ============================================================
+   DOMANDE – modificabili qui.
+   Per ogni domanda: titolo, scenario, tre opzioni, indice della
+   risposta corretta (0 = prima, 1 = seconda, 2 = terza) e una
+   breve spiegazione mostrata dopo la risposta.
+   Le opzioni vengono mescolate a ogni partita.
+   ============================================================ */
+const QUESTIONS = [
+  {
+    titolo: "Feedback del capo",
+    scenario: "Dopo una presentazione, il tuo responsabile evidenzia diverse criticità.",
+    opzioni: [
+      "“Non sono portato per le presentazioni, eviterò in futuro.”",
+      "“Chiederò feedback specifici e mi allenerò per migliorare.”",
+      "“Era solo una giornata no, non serve cambiare nulla.”"
+    ],
+    corretta: 1,
+    perche: "Chiedere feedback specifici e allenarsi trasforma una critica in un piano di miglioramento."
+  },
+  {
+    titolo: "Nuovo software aziendale",
+    scenario: "L’azienda introduce un nuovo gestionale complesso.",
+    opzioni: [
+      "“Mi iscrivo a una formazione e provo a usarlo gradualmente.”",
+      "“È troppo complicato, continuerò col vecchio metodo.”",
+      "“Aspetto che gli altri lo imparino e poi vedrò.”"
+    ],
+    corretta: 0,
+    perche: "Formarsi e provare gradualmente significa trattare la difficoltà come qualcosa che si può imparare."
+  },
+  {
+    titolo: "Confronto con un collega",
+    scenario: "Un collega ottiene risultati migliori dei tuoi.",
+    opzioni: [
+      "“Lui è più bravo, non posso competere.”",
+      "“Chiedo al collega consigli pratici per migliorare.”",
+      "“Dipende solo dalla fortuna, non c’è molto da imparare.”"
+    ],
+    corretta: 1,
+    perche: "Il successo di un altro diventa una fonte da cui imparare, non una misura di quanto vali."
+  },
+  {
+    titolo: "Errore con un cliente",
+    scenario: "Hai commesso un errore che ha creato un disservizio.",
+    opzioni: [
+      "“Meglio evitare responsabilità in futuro.”",
+      "“Capisco cosa è successo e miglioro il processo.”",
+      "“Non è colpa mia, il sistema non funziona.”"
+    ],
+    corretta: 1,
+    perche: "Capire cosa è successo e correggere il processo trasforma l’errore in apprendimento."
+  },
+  {
+    titolo: "Progetto sfidante",
+    scenario: "Ti assegnano un progetto fuori dalla tua zona di comfort.",
+    opzioni: [
+      "“Accetto, anche se sarà difficile, e chiedo supporto.”",
+      "“Non è il mio ambito, probabilmente fallirò.”",
+      "“Accetto solo se è garantito che andrà bene.”"
+    ],
+    corretta: 0,
+    perche: "Chi ha un mindset di crescita accetta la sfida e cerca aiuto: l’obiettivo è crescere, non evitare il rischio di sbagliare."
+  },
+  {
+    titolo: "Formazione obbligatoria",
+    scenario: "Devi partecipare a un corso su competenze che non ti interessano.",
+    opzioni: [
+      "“Non mi serve, seguirò distrattamente.”",
+      "“Provo a cogliere almeno uno spunto utile.”",
+      "“Se non mi interessa ora, non mi servirà mai.”"
+    ],
+    corretta: 1,
+    perche: "Cercare almeno uno spunto utile mantiene viva la curiosità anche fuori dai propri interessi."
+  },
+  {
+    titolo: "Critica da un collega",
+    scenario: "Un collega critica il tuo modo di lavorare.",
+    opzioni: [
+      "“La ignoro completamente.”",
+      "“Mi difendo subito senza ascoltare.”",
+      "“Valuto se nella critica c’è qualcosa di utile.”"
+    ],
+    corretta: 2,
+    perche: "Ignorare o difendersi chiude la porta. Valutare cosa c’è di utile permette di imparare anche da un feedback poco gentile."
+  },
+  {
+    titolo: "Obiettivo non raggiunto",
+    scenario: "Non hai raggiunto il target trimestrale.",
+    opzioni: [
+      "“Non sono adatto a questo ruolo.”",
+      "“Analizzo i dati e cambio strategia.”",
+      "“È solo sfortuna, non dipende da me.”"
+    ],
+    corretta: 1,
+    perche: "Un risultato mancato è un’informazione su cui lavorare, non un verdetto su di te."
+  },
+  {
+    titolo: "Nuova responsabilità",
+    scenario: "Ti propongono di guidare un piccolo team.",
+    opzioni: [
+      "“Accetto e cerco mentoring per migliorare.”",
+      "“Non ho esperienza, quindi rifiuto.”",
+      "“Accetto ma senza cambiare il mio modo di lavorare.”"
+    ],
+    corretta: 0,
+    perche: "Accettare e cercare un mentore significa assumersi il ruolo sapendo che si può, e si deve, imparare."
+  },
+  {
+    titolo: "Cambiamento organizzativo",
+    scenario: "L’azienda cambia strategia e processi.",
+    opzioni: [
+      "“Era meglio prima, non mi adatto.”",
+      "“Mi adeguo ma senza coinvolgimento.”",
+      "“Cerco di capire il cambiamento e come adattarmi.”"
+    ],
+    corretta: 2,
+    perche: "Capire il cambiamento e come adattarsi è un atteggiamento attivo: né resistenza, né adesione passiva."
+  }
+];
+
+/* Messaggi finali in base al punteggio */
+function messaggio(punti, totale) {
+  const p = punti / totale;
+  if (p >= 0.9) return "Mindset di crescita da manuale. Ora il punto è mantenerlo quando la situazione si fa davvero difficile.";
+  if (p >= 0.7) return "Ottima base. Qualche reazione automatica da rivedere, e adesso sai dove guardare.";
+  if (p >= 0.5) return "Una via di mezzo: in alcune situazioni scatta ancora il mindset fisso. Rileggi le soluzioni qui sotto.";
+  return "Qui c’è parecchio da guadagnare. Leggi le soluzioni e prova a riformulare le tue risposte.";
+}
+
+/* ---------------- logica ---------------- */
+const $ = (id) => document.getElementById(id);
+const LETTERE = ["A", "B", "C", "D"];
+let idx = 0, punti = 0, risposte = [];
+
+function mescola(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function mostra(id) {
+  ["start", "quiz", "result"].forEach(s => $(s).classList.toggle("hidden", s !== id));
+  window.scrollTo({ top: 0 });
+}
+
+function avvia() {
+  idx = 0; punti = 0; risposte = [];
+  const steps = $("steps");
+  steps.innerHTML = "";
+  QUESTIONS.forEach(() => steps.appendChild(document.createElement("span")));
+  mostra("quiz");
+  disegnaDomanda();
+}
+
+function disegnaDomanda() {
+  const q = QUESTIONS[idx];
+  $("counter").textContent = "Domanda " + (idx + 1) + " di " + QUESTIONS.length;
+  $("live-score").textContent = "Punti: " + punti;
+  $("q-title").textContent = q.titolo;
+  $("q-scenario").textContent = q.scenario;
+  $("feedback").className = "feedback hidden";
+  $("feedback").innerHTML = "";
+  $("next-wrap").classList.add("hidden");
+
+  [...$("steps").children].forEach((s, i) => {
+    if (i === idx) s.className = "now";
+  });
+
+  const opts = mescola(q.opzioni.map((testo, i) => ({ testo, ok: i === q.corretta })));
+  const box = $("options");
+  box.innerHTML = "";
+  opts.forEach((o, i) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "opt";
+    b.dataset.ok = o.ok ? "1" : "0";
+    const l = document.createElement("span");
+    l.className = "letter";
+    l.textContent = LETTERE[i];
+    const t = document.createElement("span");
+    t.textContent = o.testo;
+    b.append(l, t);
+    b.addEventListener("click", () => scegli(b, o, q));
+    box.appendChild(b);
+  });
+  $("q-scenario").focus({ preventScroll: true });
+}
+
+function scegli(btn, scelta, q) {
+  const bottoni = [...document.querySelectorAll(".opt")];
+  bottoni.forEach(b => {
+    b.disabled = true;
+    if (b.dataset.ok === "1") b.classList.add("correct");
+    else if (b !== btn) b.classList.add("dim");
+  });
+  const giusta = QUESTIONS[idx].opzioni[q.corretta];
+  if (scelta.ok) {
+    punti++;
+  } else {
+    btn.classList.add("wrong");
+  }
+  risposte.push({ q, scelta: scelta.testo, ok: scelta.ok, giusta });
+
+  $("steps").children[idx].className = scelta.ok ? "ok" : "ko";
+  $("live-score").textContent = "Punti: " + punti;
+
+  const fb = $("feedback");
+  fb.className = "feedback " + (scelta.ok ? "ok" : "ko");
+  const strong = document.createElement("strong");
+  strong.textContent = scelta.ok ? "Corretto! +1 punto" : "Risposta sbagliata";
+  const p = document.createElement("p");
+  p.textContent = (scelta.ok ? "" : "La risposta in linea con il mindset di crescita è quella evidenziata in verde. ") + q.perche;
+  fb.append(strong, p);
+
+  const ultima = idx === QUESTIONS.length - 1;
+  $("btn-next").textContent = ultima ? "Vedi il risultato" : "Avanti";
+  $("next-wrap").classList.remove("hidden");
+  $("btn-next").focus({ preventScroll: false });
+}
+
+function avanti() {
+  if (idx < QUESTIONS.length - 1) {
+    idx++;
+    disegnaDomanda();
+  } else {
+    risultato();
+  }
+}
+
+function risultato() {
+  const tot = QUESTIONS.length;
+  $("score-num").innerHTML = punti + "<span> / " + tot + "</span>";
+  $("score-msg").textContent = messaggio(punti, tot);
+  const ol = $("recap");
+  ol.innerHTML = "";
+  risposte.forEach((r, i) => {
+    const li = document.createElement("li");
+    li.className = r.ok ? "ok" : "ko";
+
+    const h = document.createElement("p");
+    h.className = "rq";
+    h.textContent = (i + 1) + ". " + r.q.titolo;
+    li.appendChild(h);
+
+    const l1 = document.createElement("p");
+    l1.className = "line";
+    const t1 = document.createElement("span");
+    t1.className = "tag " + (r.ok ? "ok" : "ko");
+    t1.textContent = r.ok ? "La tua risposta (corretta): " : "La tua risposta (sbagliata): ";
+    l1.append(t1, document.createTextNode(r.scelta));
+    li.appendChild(l1);
+
+    if (!r.ok) {
+      const l2 = document.createElement("p");
+      l2.className = "line";
+      const t2 = document.createElement("span");
+      t2.className = "tag ok";
+      t2.textContent = "Risposta corretta: ";
+      l2.append(t2, document.createTextNode(r.giusta));
+      li.appendChild(l2);
+    }
+
+    const w = document.createElement("p");
+    w.className = "why";
+    w.textContent = r.q.perche;
+    li.appendChild(w);
+
+    ol.appendChild(li);
+  });
+  mostra("result");
+}
+
+$("btn-start").addEventListener("click", avvia);
+$("btn-next").addEventListener("click", avanti);
+$("btn-restart").addEventListener("click", avvia);
+</script>
+</body>
+</html>
